@@ -1,5 +1,11 @@
 const $ = id => document.getElementById(id);
 
+function fmtFecha(f) {
+  if (!f) return '';
+  const m = /^(\d{4})-(\d{2})-(\d{2})(.*)$/.exec(f.trim());
+  return m ? `${m[3]}/${m[2]}/${m[1]}${m[4]}` : f;
+}
+
 let horasActual = 72;
 let resumenActual = { sismos: [], estadisticas: null, enjambres: [], zonas: [], alertas: [] };
 let marcadores = {};
@@ -147,7 +153,7 @@ document.querySelectorAll('.tab').forEach(btn => {
 
 // ---- Renderizado ----
 function popupSismo(s) {
-  return `<b>M${s.magnitud.toFixed(1)} (${s.tipo_mag})</b><br>${s.fecha_hlv} HLV<br>` +
+  return `<b>M${s.magnitud.toFixed(1)} (${s.tipo_mag})</b><br>${fmtFecha(s.fecha_hlv)} HLV<br>` +
     `Prof: ${s.profundidad_km} km<br>${s.lat}, ${s.lon}<br><i>${s.referencia || ''}</i>`;
 }
 
@@ -161,7 +167,7 @@ function mostrarUltimo(s) {
   $('u-mag').textContent = `M ${s.magnitud.toFixed(1)}`;
   $('u-mag').style.color = colorProf(s.profundidad_km);
   $('u-ref').textContent = s.referencia || `${s.lat}, ${s.lon}`;
-  $('u-det').textContent = `${s.fecha_hlv} HLV · Prof. ${s.profundidad_km} km`;
+  $('u-det').textContent = `${fmtFecha(s.fecha_hlv)} HLV · Prof. ${s.profundidad_km} km`;
 }
 
 function crearElementoSismo(s, esNuevo = false) {
@@ -176,7 +182,7 @@ function crearElementoSismo(s, esNuevo = false) {
 
   const li = document.createElement('li');
   li.innerHTML = `<div class="mag" style="background:${colorProf(s.profundidad_km)}">${s.magnitud.toFixed(1)}</div>` +
-    `<div class="det">${s.referencia || (s.lat + ', ' + s.lon)}<small>${s.fecha_hlv} HLV · ${s.profundidad_km} km</small></div>`;
+    `<div class="det">${s.referencia || (s.lat + ', ' + s.lon)}<small>${fmtFecha(s.fecha_hlv)} HLV · ${s.profundidad_km} km</small></div>`;
   li.onclick = () => { mapa.flyTo([s.lat, s.lon], 8); c.openPopup(); };
   if (esNuevo) {
     $('lista').prepend(li);
@@ -215,7 +221,9 @@ function renderEnjambres(enjambres) {
     return;
   }
   enjambres.forEach(e => {
-    const rangoFecha = e.inicio_hlv === e.fin_hlv ? `${e.fin_hlv} HLV` : `${e.inicio_hlv} → ${e.fin_hlv} HLV`;
+    const rangoFecha = e.inicio_hlv === e.fin_hlv
+      ? `${fmtFecha(e.fin_hlv)} HLV`
+      : `${fmtFecha(e.inicio_hlv)} → ${fmtFecha(e.fin_hlv)} HLV`;
     const circle = L.circle([e.centro_lat, e.centro_lon], {
       radius: e.radio_km * 1000,
       color: e.activo ? '#ff9f1a' : '#8b9bb0',
@@ -325,8 +333,8 @@ function renderStats(st) {
     const h = Math.max(4, Math.round((d.cantidad / maxD) * 68));
     const col = document.createElement('div');
     col.className = 'dia-col';
-    col.title = `${d.fecha}: ${d.cantidad} sismos`;
-    col.innerHTML = `<div class="dia-bar" style="height:${h}px"></div><span class="dia-lbl">${d.fecha.slice(8)}</span>`;
+    col.title = `${fmtFecha(d.fecha)}: ${d.cantidad} sismos`;
+    col.innerHTML = `<div class="dia-bar" style="height:${h}px"></div><span class="dia-lbl">${d.fecha.slice(8)}/${d.fecha.slice(5, 7)}</span>`;
     dias.append(col);
   });
 

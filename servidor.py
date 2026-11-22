@@ -189,6 +189,13 @@ def parse_utc(fecha_utc: str) -> datetime:
     return datetime.strptime(fecha_utc, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
 
 
+def fmt_hlv(fecha_hlv: str) -> str:
+    """Convierte 'YYYY-MM-DD HH:MM:SS' a 'DD/MM/YYYY HH:MM:SS' para presentación."""
+    if len(fecha_hlv) >= 10 and fecha_hlv[4] == "-" and fecha_hlv[7] == "-":
+        return f"{fecha_hlv[8:10]}/{fecha_hlv[5:7]}/{fecha_hlv[:4]}{fecha_hlv[10:]}"
+    return fecha_hlv
+
+
 def evaluar_geocercas(con: sqlite3.Connection, sismo: dict) -> list[dict]:
     zonas = con.execute("SELECT * FROM zonas_criticas").fetchall()
     generadas = []
@@ -199,7 +206,7 @@ def evaluar_geocercas(con: sqlite3.Connection, sismo: dict) -> list[dict]:
             titulo = f"Sismo M{sismo['magnitud']:.1f} cerca de {z['nombre']}"
             detalle = (
                 f"Distancia: {dist:.1f} km (umbral {z['radio_km']:.0f} km) · "
-                f"Prof: {sismo['profundidad_km']} km · {sismo['fecha_hlv']} HLV"
+                f"Prof: {sismo['profundidad_km']} km · {fmt_hlv(sismo['fecha_hlv'])} HLV"
             )
             cur = con.execute(
                 """INSERT INTO alertas(tipo, nivel, titulo, detalle, sismo_id, zona_id, fecha_utc, atendida)
@@ -477,7 +484,7 @@ def generar_csv(sismos: list[dict]) -> bytes:
     w.writerow(["id", "fecha_hlv", "fecha_utc", "magnitud", "tipo_mag", "profundidad_km", "lat", "lon", "referencia"])
     for s in sismos:
         w.writerow([
-            s["id"], s["fecha_hlv"], s["fecha_utc"], s["magnitud"],
+            s["id"], fmt_hlv(s["fecha_hlv"]), s["fecha_utc"], s["magnitud"],
             s["tipo_mag"], s["profundidad_km"], s["lat"], s["lon"], s["referencia"],
         ])
     return ("\ufeff" + buf.getvalue()).encode("utf-8")
@@ -513,16 +520,16 @@ def generar_reporte_html(sismos: list[dict], horas: int) -> bytes:
     enjambres = detectar_enjambres(sismos)
     alertas = listar_alertas()
     etiqueta = f"Últimas {horas} horas" if horas > 0 else "Histórico completo"
-    ahora_hlv = datetime.now(HLV).strftime("%Y-%m-%d %H:%M:%S HLV")
+    ahora_hlv = datetime.now(HLV).strftime("%d/%m/%Y %H:%M:%S HLV")
 
     filas_sismos = "".join(
-        f"<tr><td>{h.escape(s['fecha_hlv'])}</td><td><b>{s['magnitud']:.1f}</b> ({h.escape(s['tipo_mag'])})</td>"
+        f"<tr><td>{h.escape(fmt_hlv(s['fecha_hlv']))}</td><td><b>{s['magnitud']:.1f}</b> ({h.escape(s['tipo_mag'])})</td>"
         f"<td>{s['profundidad_km']} km</td><td>{s['lat']}, {s['lon']}</td><td>{h.escape(s['referencia'])}</td></tr>"
         for s in sismos[:200]
     )
     filas_enj = "".join(
         f"<tr><td>{e['cantidad']} sismos</td><td>M{e['mag_max']:.1f}</td><td>{e['prof_prom']} km</td>"
-        f"<td>{h.escape(e['inicio_hlv'])} → {h.escape(e['fin_hlv'])}</td>"
+        f"<td>{h.escape(fmt_hlv(e['inicio_hlv']))} → {h.escape(fmt_hlv(e['fin_hlv']))}</td>"
         f"<td>{h.escape(e['referencia'])}</td><td>{'ACTIVO' if e['activo'] else 'Histórico'}</td></tr>"
         for e in enjambres
     ) or "<tr><td colspan='6'>No se detectaron enjambres en este período.</td></tr>"
