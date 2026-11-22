@@ -1,0 +1,19 @@
+MAPA SÍSMICO 2.0 – GESTIÓN DE RIESGOS
+Versión 2.0.0
+
+Plataforma de monitoreo sísmico y soporte a la gestión de riesgos basada en
+los boletines públicos de FUNVISIS (t.me/Funvisis).
+
+Características principales:
+- Histórico completo en base de datos local con filtro temporal (72h, 7d, 30d, Todo).
+- Detector automático de enjambres sísmicos y secuencias de réplicas.
+- Zonas críticas (geocercas) con 18 infraestructuras de Venezuela precargadas y alertas en vivo.
+- Panel estadístico y mapa de calor (heatmap).
+- Importación (CSV, JSON, GeoJSON) y exportación GIS / reportes situacionales (PDF/HTML).
+- Modo quiosco a pantalla completa para TV o sala de situación.
+
+Requiere conexión a internet.
+
+© 2026 Lcdo. Denny Lagos
+Frontino Software Solutions
+«El poder de las grandes ideas hecho software»

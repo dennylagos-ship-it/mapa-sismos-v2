@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sismos 2.0 – Gestión de Riesgos</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img id="logo-lat" class="logo" alt="">
+      <div>
+        <h1>🌎 Sismos 2.0 <span class="badge">Gestión de Riesgos</span></h1>
+        <div class="estado"><span id="punto" class="punto"></span><span id="estado">conectando…</span> · <span id="reloj"></span></div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="grupo-pills" id="filtro-horas" title="Ventana temporal">
+        <button data-horas="72" class="activo">72h</button>
+        <button data-horas="168">7d</button>
+        <button data-horas="720">30d</button>
+        <button data-horas="0">Todo</button>
+      </div>
+
+      <div class="grupo-capas" title="Capas del mapa">
+        <label><input type="checkbox" id="capa-marcadores" checked> Sismos</label>
+        <label><input type="checkbox" id="capa-calor"> Calor</label>
+        <label><input type="checkbox" id="capa-enjambres" checked> Enjambres</label>
+        <label><input type="checkbox" id="capa-zonas" checked> Zonas</label>
+      </div>
+
+      <div class="grupo-export">
+        <button id="btn-sonido" title="Activar / silenciar sonido de alerta">🔊</button>
+        <button id="btn-probar-alerta" title="Probar alerta visual y sonora">🔔 Probar</button>
+        <input id="imp-arch" type="file" accept=".csv,.json,.geojson" hidden>
+        <button id="imp-btn" title="Importar registros históricos (CSV, JSON o GeoJSON)">Importar</button>
+        <button id="exp-csv" title="Exportar CSV para Excel">CSV</button>
+        <button id="exp-geojson" title="Exportar GeoJSON para QGIS/ArcGIS">GeoJSON</button>
+        <button id="exp-html" class="primario" title="Abrir reporte situacional imprimible / PDF">Reporte PDF</button>
+        <button id="abrir-acerca" title="Acerca de">ⓘ</button>
+      </div>
+    </div>
+  </header>
+
+  <div id="alerta-banner" class="alerta-banner oculto">
+    <span id="alerta-texto"></span>
+    <div style="display:flex;gap:6px">
+      <button id="alerta-ver-zonas">Ver alertas</button>
+      <button id="alerta-cerrar">✕</button>
+    </div>
+  </div>
+
+  <main class="workspace">
+    <aside id="panel">
+      <nav class="tabs">
+        <button class="tab activo" data-tab="sismos">Sismos <span id="cnt-sismos" class="cnt">0</span></button>
+        <button class="tab" data-tab="enjambres">Enjambres <span id="cnt-enj" class="cnt">0</span></button>
+        <button class="tab" data-tab="zonas">Zonas <span id="cnt-al" class="cnt alerta">0</span></button>
+        <button class="tab" data-tab="stats">Estadísticas</button>
+      </nav>
+
+      <section id="tab-sismos" class="tab-body activo">
+        <div id="ultimo" class="ultimo">
+          <div class="u-top">
+            <span id="u-mag" class="u-mag">--</span>
+            <span id="u-ref" class="u-ref">Esperando datos…</span>
+          </div>
+          <div id="u-det" class="u-det"></div>
+        </div>
+        <ul id="lista" class="lista"></ul>
+      </section>
+
+      <section id="tab-enjambres" class="tab-body">
+        <div class="info-box">Agrupación automática: ≥ 3 sismos en un radio de 35 km y ventana de 24 horas.</div>
+        <ul id="lista-enjambres" class="lista"></ul>
+      </section>
+
+      <section id="tab-zonas" class="tab-body">
+        <form id="form-zona" class="form-zona">
+          <h3>Nueva zona / infraestructura crítica</h3>
+          <input id="z-nombre" type="text" placeholder="Nombre (ej. Represa Guri, Hospital)" required>
+          <div class="fila2">
+            <select id="z-tipo">
+              <option value="hospital">Hospital</option>
+              <option value="represa">Represa</option>
+              <option value="subestacion">Subestación</option>
+              <option value="escuela">Escuela</option>
+              <option value="puente">Puente</option>
+              <option value="sede">Sede operativa</option>
+              <option value="otro">Otro</option>
+            </select>
+            <input id="z-radio" type="number" step="1" min="5" value="50" title="Radio en km" placeholder="Radio (km)">
+            <input id="z-mag" type="number" step="0.1" min="1" value="3.5" title="Magnitud mínima" placeholder="Mag mín">
+          </div>
+          <div class="fila2">
+            <input id="z-lat" type="number" step="0.0001" placeholder="Latitud" required>
+            <input id="z-lon" type="number" step="0.0001" placeholder="Longitud" required>
+            <button type="button" id="z-pick" title="Hacer clic en el mapa para tomar coordenadas">📍 Mapa</button>
+          </div>
+          <button type="submit" class="btn-full">Guardar zona crítica</button>
+        </form>
+
+        <h3 class="subtitulo">Alertas recientes</h3>
+        <ul id="lista-alertas" class="lista"></ul>
+
+        <h3 class="subtitulo">Zonas monitoreadas</h3>
+        <ul id="lista-zonas" class="lista"></ul>
+      </section>
+
+      <section id="tab-stats" class="tab-body">
+        <div class="kpis">
+          <div class="kpi"><small>Total</small><b id="st-total">0</b></div>
+          <div class="kpi"><small>Mag. Máx</small><b id="st-magmax">0.0</b></div>
+          <div class="kpi"><small>Prof. Prom</small><b id="st-prof">0 km</b></div>
+          <div class="kpi"><small>Superficiales</small><b id="st-sup">0</b></div>
+        </div>
+        <h3 class="subtitulo">Por profundidad</h3>
+        <div id="st-barras-prof" class="barras"></div>
+        <h3 class="subtitulo">Por magnitud</h3>
+        <div id="st-barras-mag" class="barras"></div>
+        <h3 class="subtitulo">Actividad diaria (últimos 14 días)</h3>
+        <div id="st-dias" class="dias-chart"></div>
+        <h3 class="subtitulo">Zonas con mayor recurrencia</h3>
+        <ul id="st-refs" class="lista compacta"></ul>
+      </section>
+
+      <footer class="creditos">
+        <span>© 2026 Lcdo. Denny Lagos · Frontino Software Solutions</span>
+        <a href="#" id="abrir-acerca-link">Acerca de</a>
+      </footer>
+    </aside>
+
+    <div id="mapa"></div>
+  </main>
+
+  <img id="logo-q" class="logo-q" alt="">
+  <div id="credito-q">© Frontino Software Solutions</div>
+
+  <div id="acerca" class="modal">
+    <div class="modal-card">
+      <button id="cerrar-acerca" class="cerrar">✕</button>
+      <img id="logo-prev" class="logo-prev" alt="">
+      <h2>🌎 Mapa Sísmico 2.0</h2>
+      <p id="ver" class="muted"></p>
+      <p style="margin:0">© 2026 Lcdo. Denny Lagos<br><b>Frontino Software Solutions</b></p>
+      <p class="lema">«El poder de las grandes ideas hecho software»</p>
+      <p>Plataforma de monitoreo sísmico y gestión de riesgos basada en boletines de FUNVISIS.</p>
+      <hr>
+      <div class="logo-cfg">
+        <input id="logo-arch" type="file" accept="image/*" hidden>
+        <button id="logo-cargar">Cargar logo</button>
+        <button id="logo-quitar" style="display:none">Quitar logo</button>
+        <span id="logo-msg" class="muted"></span>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+LICENCIA DE USO DE SOFTWARE
+Mapa Sísmico 2.0 – Plataforma de Monitoreo y Gestión de Riesgos
+
+© 2026 Lcdo. Denny Lagos · Frontino Software Solutions
+«El poder de las grandes ideas hecho software»
+
+1. TITULARIDAD Y DERECHOS DE AUTOR
+Este programa (incluyendo su código ejecutable, interfaz gráfica, base de estructuras precargadas y documentación) es propiedad intelectual de Lcdo. Denny Lagos / Frontino Software Solutions y está protegido por las leyes de derechos de autor aplicables.
+
+2. LICENCIA DE USO
+Se concede al usuario una licencia de uso no exclusiva para instalar y ejecutar esta aplicación en equipos Windows con fines de monitoreo sísmico, gestión de riesgos, sala situacional, docencia o uso institucional.
+No está permitida la redistribución comercial, modificación del ejecutable o eliminación de los avisos de autoría y copyright sin autorización expresa del titular.
+
+3. FUENTE DE DATOS Y EXENCIÓN DE RESPONSABILIDAD
+Los boletines sísmicos en tiempo real provienen de las publicaciones públicas de FUNVISIS (Fundación Venezolana de Investigaciones Sismológicas). La información mostrada tiene carácter referencial y de apoyo a la toma de decisiones en gestión de riesgos; el autor y Frontino Software Solutions no se hacen responsables por interrupciones de red, cambios en la fuente externa ni por decisiones operativas tomadas exclusivamente con base en la herramienta.
+
+Al continuar con la instalación, usted acepta los términos de esta licencia.
