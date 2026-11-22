@@ -43,17 +43,19 @@ Name: "inicioquiosco"; Description: "…y abrir en modo quiosco al iniciar"; Gro
 
 [Files]
 Source: "..\dist\{#AppExe}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "icono.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExe}"
-Name: "{group}\{#AppName} (quiosco)"; Filename: "{app}\{#AppExe}"; Parameters: "--quiosco"
+Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExe}"; IconFilename: "{app}\icono.ico"
+Name: "{group}\{#AppName} (quiosco)"; Filename: "{app}\{#AppExe}"; Parameters: "--quiosco"; IconFilename: "{app}\icono.ico"
 Name: "{group}\Desinstalar"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; Tasks: escritorio
-Name: "{autodesktop}\{#AppName} (quiosco)"; Filename: "{app}\{#AppExe}"; Parameters: "--quiosco"; Tasks: quiosco
-Name: "{userstartup}\{#AppName}"; Filename: "{app}\{#AppExe}"; Tasks: inicio and not inicioquiosco
-Name: "{userstartup}\{#AppName}"; Filename: "{app}\{#AppExe}"; Parameters: "--quiosco"; Tasks: inicioquiosco
+Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; IconFilename: "{app}\icono.ico"; Tasks: escritorio
+Name: "{autodesktop}\{#AppName} (quiosco)"; Filename: "{app}\{#AppExe}"; Parameters: "--quiosco"; IconFilename: "{app}\icono.ico"; Tasks: quiosco
+Name: "{userstartup}\{#AppName}"; Filename: "{app}\{#AppExe}"; IconFilename: "{app}\icono.ico"; Tasks: inicio and not inicioquiosco
+Name: "{userstartup}\{#AppName}"; Filename: "{app}\{#AppExe}"; Parameters: "--quiosco"; IconFilename: "{app}\icono.ico"; Tasks: inicioquiosco
 
 [Run]
+Filename: "ie4uinit.exe"; Parameters: "-show"; Flags: runhidden
 Filename: "{app}\{#AppExe}"; Description: "Abrir el mapa ahora"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
